@@ -462,7 +462,7 @@ class ModuleInfo(object):
     def source(self):
         if self.template_source is not None:
             if self.module._source_encoding and \
-                    not isinstance(self.template_source, unicode):
+                    not isinstance(self.template_source, str):
                 return self.template_source.decode(
                                 self.module._source_encoding)
             else:
@@ -495,11 +495,11 @@ def _compile_text(template, text, filename):
                             strict_undefined=template.strict_undefined)
 
     cid = identifier
-    if not util.py3k and isinstance(cid, unicode):
+    if not util.py3k and isinstance(cid, str):
         cid = cid.encode()
     module = types.ModuleType(cid)
     code = compile(source, cid, 'exec')
-    exec code in module.__dict__, module.__dict__
+    exec(code, module.__dict__, module.__dict__)
     return (source, module)
 
 def _compile_module_file(template, text, filename, outputpath):
@@ -527,7 +527,7 @@ def _compile_module_file(template, text, filename, outputpath):
     # avoiding synchronization issues.
     (dest, name) = tempfile.mkstemp(dir=os.path.dirname(outputpath))
  
-    if isinstance(source, unicode):
+    if isinstance(source, str):
         source = source.encode(lexer.encoding or 'ascii')
  
     os.write(dest, source)
@@ -535,7 +535,7 @@ def _compile_module_file(template, text, filename, outputpath):
     shutil.move(name, outputpath)
 
 def _get_module_info_from_callable(callable_):
-    return _get_module_info(callable_.func_globals['__name__'])
+    return _get_module_info(callable_.__globals__['__name__'])
  
 def _get_module_info(filename):
     return ModuleInfo._modules[filename]

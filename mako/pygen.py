@@ -7,7 +7,7 @@
 """utilities for generating and formatting literal Python code."""
 
 import re, string
-from StringIO import StringIO
+from io import StringIO
 from mako import exceptions
 
 class PythonPrinter(object):

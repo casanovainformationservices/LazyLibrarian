@@ -1,4 +1,6 @@
-import time, os, threading
+import time
+import os
+import threading
 
 import lazylibrarian
 from lazylibrarian import logger, formatter, database

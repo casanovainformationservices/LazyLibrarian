@@ -71,12 +71,12 @@ class Scheduler(object):
         # Configure job stores
         jobstore_opts = combine_opts(config, 'jobstore.')
         jobstores = {}
-        for key, value in jobstore_opts.items():
+        for key, value in list(jobstore_opts.items()):
             store_name, option = key.split('.', 1)
             opts_dict = jobstores.setdefault(store_name, {})
             opts_dict[option] = value
 
-        for alias, opts in jobstores.items():
+        for alias, opts in list(jobstores.items()):
             classname = opts.pop('class')
             cls = maybe_ref(classname)
             jobstore = cls(**opts)

@@ -1,7 +1,7 @@
 # example
 # https://www.googleapis.com/books/v1/volumes?q=+inauthor:george+martin+intitle:song+ice+fire
 
-import urllib, urllib2, json, time
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, json, time
 
 import lazylibrarian
 from lazylibrarian import logger, formatter, database
@@ -22,9 +22,9 @@ class GoogleBooks:
         resultlist = []
 
         if self.type == 'book':
-            set_url = self.url + urllib.quote('intitle:' + '"' + self.name + '"')
+            set_url = self.url + urllib.parse.quote('intitle:' + '"' + self.name + '"')
         else:
-            set_url = self.url + urllib.quote('inauthor:' + '"' + self.name + '"')
+            set_url = self.url + urllib.parse.quote('inauthor:' + '"' + self.name + '"')
 
         logger.info('Searching url: ' + set_url)
 
@@ -35,9 +35,11 @@ class GoogleBooks:
             while True:
 
                 self.params['startIndex'] = startindex
-                URL = set_url + '&' + urllib.urlencode(self.params)
+                URL = set_url + '&' + urllib.parse.urlencode(self.params)
 
-                jsonresults = json.JSONDecoder().decode(urllib2.urlopen(URL, timeout=30).read())
+                response = urllib.request.urlopen(URL, timeout=30)
+                encoding = response.headers.get_content_charset()
+                jsonresults = json.loads(response.read().decode(encoding))
                 startindex = startindex+40
 
                 for item in jsonresults['items']:
@@ -139,7 +141,7 @@ class GoogleBooks:
         resultlist = []
 
         URL = 'https://www.googleapis.com/books/v1/volumes/' + bookid
-        jsonresults = json.JSONDecoder().decode(urllib2.urlopen(URL, timeout=30).read())
+        jsonresults = json.JSONDecoder().decode(urllib.request.urlopen(URL, timeout=30).read())
 
         try:
             bookdate = item['volumeInfo']['publishedDate']

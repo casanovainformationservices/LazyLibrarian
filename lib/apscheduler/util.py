@@ -67,7 +67,7 @@ def convert_to_datetime(input):
         m = _DATE_REGEX.match(input)
         if not m:
             raise ValueError('Invalid date string')
-        values = [(k, int(v or 0)) for k, v in m.groupdict().items()]
+        values = [(k, int(v or 0)) for k, v in list(m.groupdict().items())]
         values = dict(values)
         return datetime(**values)
     raise TypeError('Unsupported input type: %s' % type(input))
@@ -125,7 +125,7 @@ def combine_opts(global_config, prefix, local_config={}):
     """
     prefixlen = len(prefix)
     subconf = {}
-    for key, value in global_config.items():
+    for key, value in list(global_config.items()):
         if key.startswith(prefix):
             key = key[prefixlen:]
             subconf[key] = value
@@ -140,8 +140,8 @@ def get_callable_name(func):
     name = func.__module__
     if hasattr(func, '__self__') and func.__self__:
         name += '.' + func.__self__.__name__
-    elif hasattr(func, 'im_self') and func.im_self:     # py2.4, 2.5
-        name += '.' + func.im_self.__name__
+    elif hasattr(func, 'im_self') and func.__self__:     # py2.4, 2.5
+        name += '.' + func.__self__.__name__
     if hasattr(func, '__name__'):
         name += '.' + func.__name__
     return name
@@ -195,10 +195,10 @@ def to_unicode(string, encoding='ascii'):
 
 
 if sys.version_info < (3, 0):  # pragma: nocover
-    iteritems = lambda d: d.iteritems()
-    itervalues = lambda d: d.itervalues()
+    iteritems = lambda d: iter(d.items())
+    itervalues = lambda d: iter(d.values())
     xrange = xrange
 else:  # pragma: nocover
-    iteritems = lambda d: d.items()
-    itervalues = lambda d: d.values()
+    iteritems = lambda d: list(d.items())
+    itervalues = lambda d: list(d.values())
     xrange = range

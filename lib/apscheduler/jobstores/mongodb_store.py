@@ -7,7 +7,7 @@ from lib.apscheduler.jobstores.base import JobStore
 from lib.apscheduler.job import Job
 
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:  # pragma: nocover
     import pickle
 

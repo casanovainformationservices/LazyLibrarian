@@ -1,4 +1,4 @@
-import time, threading, urllib, urllib2, sys
+import time, threading, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -15,12 +15,12 @@ class GoodReads:
 
     def find_author_id(self):
 
-        URL = 'http://www.goodreads.com/api/author_url/?' + urllib.urlencode(self.name) + '&' + urllib.urlencode(self.params)
+        URL = 'http://www.goodreads.com/api/author_url/?' + urllib.parse.urlencode(self.name) + '&' + urllib.parse.urlencode(self.params)
         logger.info("Searching for author with name: %s" % self.name)
 
         try:
-            sourcexml = ElementTree.parse(urllib2.urlopen(URL, timeout=20))
-        except (urllib2.URLError, IOError, EOFError), e:
+            sourcexml = ElementTree.parse(urllib.request.urlopen(URL, timeout=20))
+        except (urllib.error.URLError, IOError, EOFError) as e:
             logger.error("Error fetching authorid: ", e)
         
         rootxml = sourcexml.getroot()
@@ -41,8 +41,8 @@ class GoodReads:
 
     def get_author_info(self, authorid=None):
 
-        URL = 'http://www.goodreads.com/author/show/' + authorid + '.xml?' + urllib.urlencode(self.params)
-        sourcexml = ElementTree.parse(urllib2.urlopen(URL, timeout=20))
+        URL = 'http://www.goodreads.com/author/show/' + authorid + '.xml?' + urllib.parse.urlencode(self.params)
+        sourcexml = ElementTree.parse(urllib.request.urlopen(URL, timeout=20))
         rootxml = sourcexml.getroot()
         resultxml = rootxml.find('author')
         author_dict = {}

@@ -1,4 +1,4 @@
-import time, threading, urllib, urllib2, re
+import time, threading, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, re
 
 from xml.etree import ElementTree
 
@@ -23,17 +23,17 @@ def NewzNab(book=None):
     if not str(HOST)[:4] == "http":
         HOST = 'http://' + HOST
 
-    URL = HOST + '/api?' + urllib.urlencode(params)
+    URL = HOST + '/api?' + urllib.parse.urlencode(params)
 
     try:
-        data = ElementTree.parse(urllib2.urlopen(URL, timeout=30))
-    except (urllib2.URLError, IOError, EOFError), e:
+        data = ElementTree.parse(urllib.request.urlopen(URL, timeout=30))
+    except (urllib.error.URLError, IOError, EOFError) as e:
         logger.warn('Error fetching data from %s: %s' % (lazylibrarian.NEWZNAB_HOST, e))
         data = None
 
     if data:
         # to debug because of api
-        logger.debug(u'Parsing results from <a href="%s">%s</a>' % (URL, lazylibrarian.NEWZNAB_HOST))
+        logger.debug('Parsing results from <a href="%s">%s</a>' % (URL, lazylibrarian.NEWZNAB_HOST))
         rootxml = data.getroot()
         resultxml = rootxml.getiterator('item')
         nzbcount = 0
@@ -69,13 +69,13 @@ def NZBMatrix(book=None):
         "term": book['searchterm']
         }
 
-    URL = "http://rss.nzbmatrix.com/rss.php?" + urllib.urlencode(params)
+    URL = "http://rss.nzbmatrix.com/rss.php?" + urllib.parse.urlencode(params)
     # to debug because of api
-    logger.debug(u'Parsing results from <a href="%s">NZBMatrix</a>' % (URL))
+    logger.debug('Parsing results from <a href="%s">NZBMatrix</a>' % (URL))
 
     try:
-        data = ElementTree.parse(urllib2.urlopen(URL, timeout=30))
-    except (urllib2.URLError, IOError, EOFError), e:
+        data = ElementTree.parse(urllib.request.urlopen(URL, timeout=30))
+    except (urllib.error.URLError, IOError, EOFError) as e:
         logger.warn('Error fetching data from NZBMatrix: %s' % e)
         data = None
 

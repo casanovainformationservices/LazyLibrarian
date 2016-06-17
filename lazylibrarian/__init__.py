@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 import os, sys, subprocess, threading, cherrypy, webbrowser, sqlite3
 
@@ -234,8 +234,8 @@ def initialize():
                 os.makedirs(LOGDIR)
             except OSError:
                 if LOGLEVEL:
-                    print LOGDIR + ":"
-                    print ' Unable to create folder for logs. Only logging to console.'
+                    print(LOGDIR + ":")
+                    print(' Unable to create folder for logs. Only logging to console.')
 
         # Start the logger, silence console logging if we need to
         logger.lazylibrarian_log.initLogger(loglevel=LOGLEVEL)
@@ -243,7 +243,7 @@ def initialize():
         # Initialize the database
         try:
             dbcheck()
-        except Exception, e:
+        except Exception as e:
             logger.error("Can't connect to the database: %s" % e)
 
         __INITIALIZED__ = True
@@ -259,7 +259,7 @@ def daemonize():
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
             sys.exit(0)
-    except OSError, e:
+    except OSError as e:
         raise RuntimeError("1st fork failed: %s [%d]" %
                    (e.strerror, e.errno))
 
@@ -274,7 +274,7 @@ def daemonize():
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
             sys.exit(0)
-    except OSError, e:
+    except OSError as e:
         raise RuntimeError("2st fork failed: %s [%d]" %
                    (e.strerror, e.errno))
 
@@ -283,7 +283,7 @@ def daemonize():
 
     if PIDFILE:
         pid = str(os.getpid())
-        logger.debug(u"Writing PID " + pid + " to " + str(PIDFILE))
+        logger.debug("Writing PID " + pid + " to " + str(PIDFILE))
         file(PIDFILE, 'w').write("%s\n" % pid)
 
 def launch_browser(host, port, root):
@@ -292,7 +292,7 @@ def launch_browser(host, port, root):
 
     try:
         webbrowser.open('http://%s:%i%s' % (host, port, root))
-    except Exception, e:
+    except Exception as e:
         logger.error('Could not launch browser: %s' % e)
 
 def config_write():

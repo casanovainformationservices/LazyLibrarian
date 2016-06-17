@@ -218,7 +218,7 @@ class _TagMeta(type):
             )
         return type.__call__(cls, keyword, attributes, **kwargs)
  
-class Tag(Node):
+class Tag(Node, metaclass=_TagMeta):
     """abstract base class for tags.
  
     <%sometag/>
@@ -228,8 +228,6 @@ class Tag(Node):
     </%someothertag>
  
     """
- 
-    __metaclass__ = _TagMeta
     __keyword__ = None
  
     def __init__(self, keyword, attributes, expressions, 
@@ -430,7 +428,7 @@ class DefTag(Tag):
                                     undeclared_identifiers)
         return res + list(self.filter_args.\
                             undeclared_identifiers.\
-                            difference(filters.DEFAULT_ESCAPES.keys())
+                            difference(list(filters.DEFAULT_ESCAPES.keys()))
                         )
 
 class BlockTag(Tag):
@@ -517,7 +515,7 @@ class CallNamespaceTag(Tag):
                                 namespace, 
                                 defname, 
                                 ",".join(["%s=%s" % (k, v) for k, v in
-                                            self.parsed_attributes.iteritems() 
+                                            self.parsed_attributes.items() 
                                             if k != 'args'])
                             )
         self.code = ast.PythonCode(self.expression, **self.exception_kwargs)

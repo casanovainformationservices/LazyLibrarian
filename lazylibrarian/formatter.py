@@ -30,7 +30,7 @@ def checked(variable):
 def is_valid_isbn(isbn):
     last = 10 if isbn[-1] in ["X", "x"] else int(isbn[-1])
     weighted = [int(num)*weight for num, weight in
-              zip(isbn[:-1], reversed(range(2, 11)))]
+              zip(isbn[:-1], reversed(list(range(2, 11))))]
     return (sum(weighted) + last) %11==0
 
 def latinToAscii(unicrap):
@@ -66,7 +66,7 @@ def latinToAscii(unicrap):
 
     r = ''
     for i in unicrap:
-        if xlate.has_key(ord(i)):
+        if ord(i) in xlate:
             r += xlate[ord(i)]
         elif ord(i) >= 0x80:
             pass
@@ -75,6 +75,6 @@ def latinToAscii(unicrap):
     return r
 
 def replace_all(text, dic):
-    for i, j in dic.iteritems():
+    for i, j in dic.items():
         text = text.replace(i, j)
     return text

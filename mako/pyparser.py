@@ -10,7 +10,7 @@ Parsing to AST is done via _ast on Python > 2.5, otherwise the compiler
 module is used.
 """
 
-from StringIO import StringIO
+from io import StringIO
 from mako import exceptions, util
 import operator
 
@@ -33,7 +33,7 @@ else:
 try:
     import _ast
     util.restore__ast(_ast)
-    import _ast_util
+    from . import _ast_util
 except ImportError:
     _ast = None
     from compiler import parse as compiler_parse
@@ -48,10 +48,10 @@ def parse(code, mode='exec', **exception_kwargs):
         if _ast:
             return _ast_util.parse(code, '<unknown>', mode)
         else:
-            if isinstance(code, unicode):
+            if isinstance(code, str):
                 code = code.encode('ascii', 'backslashreplace')
             return compiler_parse(code, mode)
-    except Exception, e:
+    except Exception as e:
         raise exceptions.SyntaxException(
                     "(%s) %s (%r)" % (
                         e.__class__.__name__, 
@@ -99,7 +99,7 @@ if _ast:
                 if node.name is not None:
                     self._add_declared(node.name)
                 if node.type is not None:
-                    self.listener.undeclared_identifiers.add(node.type.id)
+                    self.visit(node.type)
                 for statement in node.body:
                     self.visit(statement)
 
@@ -526,7 +526,7 @@ else:
     class walker(visitor.ASTVisitor):
 
         def dispatch(self, node, *args):
-            print 'Node:', str(node)
+            print('Node:', str(node))
 
             # print "dir:", dir(node)
 

@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 
 import os
 import sqlite3
@@ -43,7 +43,7 @@ class DBConnection:
                     self.connection.commit()
                     break
 
-                except sqlite3.OperationalError, e:
+                except sqlite3.OperationalError as e:
                     if "unable to open database file" in e.message or "database is locked" in e.message:
                         logger.warn('Database Error: %s' % e)
                         attempt += 1
@@ -52,7 +52,7 @@ class DBConnection:
                         logger.error('Database error: %s' % e)
                         raise
 
-                except sqlite3.DatabaseError, e:
+                except sqlite3.DatabaseError as e:
                     logger.error('Fatal error executing %s :: %s' % (query, e))
                     raise
 
@@ -69,13 +69,13 @@ class DBConnection:
     def upsert(self, tableName, valueDict, keyDict):
         changesBefore = self.connection.total_changes
 
-        genParams = lambda myDict : [x + " = ?" for x in myDict.keys()]
+        genParams = lambda myDict : [x + " = ?" for x in list(myDict.keys())]
 
         query = "UPDATE "+tableName+" SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(genParams(keyDict))
 
-        self.action(query, valueDict.values() + keyDict.values())
+        self.action(query, list(valueDict.values()) + list(keyDict.values()))
 
         if self.connection.total_changes == changesBefore:
-            query = "INSERT INTO "+tableName+" (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
-                        " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
-            self.action(query, valueDict.values() + keyDict.values())
+            query = "INSERT INTO "+tableName+" (" + ", ".join(list(valueDict.keys()) + list(keyDict.keys())) + ")" + \
+                        " VALUES (" + ", ".join(["?"] * len(list(valueDict.keys()) + list(keyDict.keys()))) + ")"
+            self.action(query, list(valueDict.values()) + list(keyDict.values()))

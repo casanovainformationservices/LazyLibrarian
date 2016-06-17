@@ -1,4 +1,4 @@
-import time, threading, urllib, urllib2, os, re
+import time, threading, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, os, re
 
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
@@ -88,9 +88,9 @@ def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
     elif lazylibrarian.BLACKHOLE:
 
         try:
-            nzbfile = urllib2.urlopen(nzburl, timeout=30).read()
+            nzbfile = urllib.request.urlopen(nzburl, timeout=30).read()
 
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             logger.warn('Error fetching nzb from url: ' + nzburl + ' %s' % e)
 
         nzbname = str.replace(nzbtitle, ' ', '_') + '.nzb'
@@ -102,7 +102,7 @@ def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
             f.close()
             logger.info('NZB file saved to: ' + nzbpath)
             download = True
-        except Exception, e:
+        except Exception as e:
             logger.error('%s not writable, NZB not saved. Error: %s' % (nzbpath, e))
             download = False
 
@@ -111,11 +111,11 @@ def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
         return False
 
     if download:
-        logger.info(u'Downloaded nzbfile @ <a href="%s">%s</a>' % (nzburl, lazylibrarian.NEWZNAB_HOST))
+        logger.info('Downloaded nzbfile @ <a href="%s">%s</a>' % (nzburl, lazylibrarian.NEWZNAB_HOST))
         myDB.action('UPDATE books SET status = "Snatched" WHERE BookID=?', [bookid])
         myDB.action('UPDATE wanted SET status = "Snatched" WHERE NZBurl=?', [nzburl])
     else:
-        logger.error(u'Failed to download nzb @ <a href="%s">%s</a>' % (nzburl, lazylibrarian.NEWZNAB_HOST))
+        logger.error('Failed to download nzb @ <a href="%s">%s</a>' % (nzburl, lazylibrarian.NEWZNAB_HOST))
         myDB.action('UPDATE wanted SET status = "Failed" WHERE NZBurl=?', [nzburl])
 
 

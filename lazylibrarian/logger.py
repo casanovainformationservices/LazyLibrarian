@@ -1,11 +1,13 @@
-import os, threading, logging
+import os
+import threading
+import logging
 
 from logging import handlers
 
 import lazylibrarian
 from lazylibrarian import formatter
 
-MAX_SIZE = 1000000 # 1mb
+MAX_SIZE = 1000000           # 1 megabyte
 MAX_FILES = 5
 
 
@@ -25,10 +27,14 @@ class RotatingLogger(object):
 
         self.filename = os.path.join(lazylibrarian.LOGDIR, self.filename)
 
-        filehandler = handlers.RotatingFileHandler(self.filename, maxBytes=self.max_size, backupCount=self.max_files)
+        filehandler = handlers.RotatingFileHandler(self.filename,
+                                                   maxBytes=self.max_size,
+                                                   backupCount=self.max_files)
         filehandler.setLevel(logging.DEBUG)
 
-        fileformatter = logging.Formatter('%(asctime)s - %(levelname)-7s :: %(message)s', '%d-%b-%Y %H:%M:%S')
+        fileformatter = logging.Formatter(
+            '%(asctime)s - %(levelname)-7s :: %(message)s',
+            '%d-%b-%Y %H:%M:%S')
 
         filehandler.setFormatter(fileformatter)
         l.addHandler(filehandler)
@@ -39,7 +45,11 @@ class RotatingLogger(object):
                 consolehandler.setLevel(logging.INFO)
             if loglevel == 2:
                 consolehandler.setLevel(logging.DEBUG)
-            consoleformatter = logging.Formatter('%(asctime)s - %(levelname)s :: %(message)s', '%d-%b-%Y %H:%M:%S')
+
+            consoleformatter = logging.Formatter(
+                '%(asctime)s - %(levelname)s :: %(message)s',
+                '%d-%b-%Y %H:%M:%S')
+
             consolehandler.setFormatter(consoleformatter)
             l.addHandler(consolehandler)
 
@@ -50,7 +60,9 @@ class RotatingLogger(object):
         threadname = threading.currentThread().getName()
 
         if level != 'DEBUG':
-            lazylibrarian.LOGLIST.insert(0, (formatter.now(), message, level, threadname))
+            lazylibrarian.LOGLIST.insert(
+                0,
+                (formatter.now(), message, level, threadname))
 
         message = threadname + ' : ' + message
 
@@ -65,14 +77,18 @@ class RotatingLogger(object):
 
 lazylibrarian_log = RotatingLogger('lazylibrarian.log', MAX_SIZE, MAX_FILES)
 
+
 def debug(message):
     lazylibrarian_log.log(message, level='DEBUG')
+
 
 def info(message):
     lazylibrarian_log.log(message, level='INFO')
 
+
 def warn(message):
     lazylibrarian_log.log(message, level='WARNING')
+
 
 def error(message):
     lazylibrarian_log.log(message, level='ERROR')

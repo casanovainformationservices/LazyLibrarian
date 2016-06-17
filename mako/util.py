@@ -16,19 +16,19 @@ if py3k:
     from io import StringIO
 else:
     try:
-        from cStringIO import StringIO
+        from io import StringIO
     except:
-        from StringIO import StringIO
+        from io import StringIO
 
 import codecs, re, weakref, os, time, operator
 import collections
 
 try:
     import threading
-    import thread
+    import _thread
 except ImportError:
     import dummy_threading as threading
-    import dummy_thread as thread
+    import _dummy_thread as thread
 
 if win32 or jython:
     time_func = time.clock
@@ -73,7 +73,7 @@ def verify_directory(dir):
     while not os.path.exists(dir):
         try:
             tries += 1
-            os.makedirs(dir, 0775)
+            os.makedirs(dir, 0o775)
         except:
             if tries > 5:
                 raise
@@ -114,14 +114,14 @@ class FastEncodingBuffer(object):
     """a very rudimentary buffer that is faster than StringIO, 
     but doesn't crash on unicode data like cStringIO."""
  
-    def __init__(self, encoding=None, errors='strict', unicode=False):
+    def __init__(self, encoding=None, errors='strict', str=False):
         self.data = collections.deque()
         self.encoding = encoding
-        if unicode:
-            self.delim = u''
+        if str:
+            self.delim = ''
         else:
             self.delim = ''
-        self.unicode = unicode
+        self.str = str
         self.errors = errors
         self.write = self.data.append
  
@@ -231,9 +231,8 @@ def parse_encoding(fp):
 
         if has_bom:
             if m:
-                raise SyntaxError, \
-                      "python refuses to compile code with both a UTF8" \
-                      " byte-order-mark and a magic encoding comment"
+                raise SyntaxError("python refuses to compile code with both a UTF8" \
+                      " byte-order-mark and a magic encoding comment")
             return 'utf_8'
         elif m:
             return m.group(1)
@@ -248,7 +247,7 @@ def sorted_dict_repr(d):
     Used by the lexer unit test to compare parse trees based on strings.
  
     """
-    keys = d.keys()
+    keys = list(d.keys())
     keys.sort()
     return "{" + ", ".join(["%r: %r" % (k, d[k]) for k in keys]) + "}"
  
@@ -331,7 +330,7 @@ mako in baz not in mako""", '<unknown>', 'exec', _ast.PyCF_ONLY_AST)
 try:
     from inspect import CO_VARKEYWORDS, CO_VARARGS
     def inspect_func_args(fn):
-        co = fn.func_code
+        co = fn.__code__
 
         nargs = co.co_argcount
         names = co.co_varnames
@@ -345,7 +344,7 @@ try:
         if co.co_flags & CO_VARKEYWORDS:
             varkw = co.co_varnames[nargs]
 
-        return args, varargs, varkw, fn.func_defaults
+        return args, varargs, varkw, fn.__defaults__
 except ImportError:
     import inspect
     def inspect_func_args(fn):

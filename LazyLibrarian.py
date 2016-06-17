@@ -1,5 +1,6 @@
 import os, sys, time, cherrypy, threading, locale
 from lib.configobj import ConfigObj
+import codecs
 
 import lazylibrarian
 from lazylibrarian import webStart, logger
@@ -69,7 +70,7 @@ def main():
             lazylibrarian.LOGLEVEL = 0
             lazylibrarian.daemonize()
         else:
-            print "Daemonize not supported under Windows, starting normally"
+            print("Daemonize not supported under Windows, starting normally")
 
     if options.nolaunch:
         lazylibrarian.LAUNCH_BROWSER = False

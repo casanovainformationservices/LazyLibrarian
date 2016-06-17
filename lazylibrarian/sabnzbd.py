@@ -1,4 +1,4 @@
-import os, urllib, urllib2
+import os, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import datetime
 
 import lazylibrarian
@@ -34,20 +34,20 @@ def SABnzbd(title=None, nzburl=None):
 #    if lazylibrarian.SAB_PP:
 #        params["script"] = lazylibrarian.SAB_SCRIPT
 
-    URL = HOST + "/api?" + urllib.urlencode(params) 
+    URL = HOST + "/api?" + urllib.parse.urlencode(params) 
 
     # to debug because of api
-    logger.debug(u'Request url for <a href="%s">SABnzbd</a>' % URL)
+    logger.debug('Request url for <a href="%s">SABnzbd</a>' % URL)
 
     try:
-        request = urllib.urlopen(URL)
+        request = urllib.request.urlopen(URL)
 
-    except (EOFError, IOError), e:
-        logger.error(u"Unable to connect to SAB with URL: %s" % url)
+    except (EOFError, IOError) as e:
+        logger.error("Unable to connect to SAB with URL: %s" % url)
         return False
 
-    except httplib.InvalidURL, e:
-        logger.error(u"Invalid SAB host, check your config. Current host: %s" % HOST)
+    except httplib.InvalidURL as e:
+        logger.error("Invalid SAB host, check your config. Current host: %s" % HOST)
         return False
 
     result = request.read().strip()

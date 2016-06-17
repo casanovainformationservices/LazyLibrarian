@@ -1,4 +1,4 @@
-import os, cherrypy, urllib
+import os, cherrypy, urllib.request, urllib.parse, urllib.error
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -174,7 +174,7 @@ class WebInterface(object):
     authorPage.exposed = True
 
     def pauseAuthor(self, AuthorID):
-        logger.info(u"Pausing author: " + AuthorID)
+        logger.info("Pausing author: " + AuthorID)
         myDB = database.DBConnection()
         controlValueDict = {'AuthorID': AuthorID}
         newValueDict = {'Status': 'Paused'}
@@ -183,7 +183,7 @@ class WebInterface(object):
     pauseAuthor.exposed = True
 
     def resumeAuthor(self, AuthorID):
-        logger.info(u"Resuming author: " + AuthorID)
+        logger.info("Resuming author: " + AuthorID)
         myDB = database.DBConnection()
         controlValueDict = {'AuthorID': AuthorID}
         newValueDict = {'Status': 'Active'}
@@ -192,7 +192,7 @@ class WebInterface(object):
     resumeAuthor.exposed = True
 
     def deleteAuthor(self, AuthorID):
-        logger.info(u"Removing author: " + AuthorID)
+        logger.info("Removing author: " + AuthorID)
         myDB = database.DBConnection()
         myDB.action('DELETE from authors WHERE AuthorID=?', [AuthorID])
         myDB.action('DELETE from books WHERE AuthorID=?', [AuthorID])

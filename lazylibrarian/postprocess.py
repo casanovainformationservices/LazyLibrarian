@@ -1,6 +1,6 @@
-import shutil, os, datetime, urllib, urllib2, threading
+import shutil, os, datetime, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, threading
 
-from urllib import FancyURLopener
+from urllib.request import FancyURLopener
 
 import lazylibrarian
 
@@ -113,7 +113,7 @@ def processIMG(dest_path=None, bookimg=None):
             img.write(imggoogle.open(bookimg).read())
             img.close()
 
-    except (IOError, EOFError), e:
+    except (IOError, EOFError) as e:
         logger.error('Error fetching cover from url: %s, %s' % (bookimg, e))
 
 def processOPF(dest_path=None, authorname=None, bookname=None, bookisbn=None, bookid=None, bookpub=None, bookdate=None, bookdesc=None, booklang=None):

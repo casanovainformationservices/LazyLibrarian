@@ -151,7 +151,7 @@ class Lexer(object):
            or raw if decode_raw=False
 
         """
-        if isinstance(text, unicode):
+        if isinstance(text, str):
             m = self._coding_re.match(text)
             encoding = m and m.group(1) or known_encoding or 'ascii'
             return encoding, text
@@ -176,7 +176,7 @@ class Lexer(object):
         if decode_raw:
             try:
                 text = text.decode(parsed_encoding)
-            except UnicodeDecodeError, e:
+            except UnicodeDecodeError as e:
                 raise exceptions.CompileException(
                                 "Unicode decode operation of encoding '%s' failed" %
                                 parsed_encoding, 

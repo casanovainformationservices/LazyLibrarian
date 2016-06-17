@@ -84,7 +84,7 @@ class RichTraceback(object):
     def _init_message(self):
         """Find a unicode representation of self.error"""
         try:
-            self.message = unicode(self.error)
+            self.message = str(self.error)
         except UnicodeError:
             try:
                 self.message = str(self.error)
@@ -92,8 +92,8 @@ class RichTraceback(object):
                 # Fallback to args as neither unicode nor
                 # str(Exception(u'\xe6')) work in Python < 2.6
                 self.message = self.error.args[0]
-        if not isinstance(self.message, unicode):
-            self.message = unicode(self.message, 'ascii', 'replace')
+        if not isinstance(self.message, str):
+            self.message = str(self.message, 'ascii', 'replace')
 
     def _get_reformatted_records(self, records):
         for rec in records:
