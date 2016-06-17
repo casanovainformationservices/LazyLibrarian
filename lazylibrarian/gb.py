@@ -141,7 +141,10 @@ class GoogleBooks:
         resultlist = []
 
         URL = 'https://www.googleapis.com/books/v1/volumes/' + bookid
-        jsonresults = json.JSONDecoder().decode(urllib.request.urlopen(URL, timeout=30).read())
+        #jsonresults = json.JSONDecoder().decode(urllib.request.urlopen(URL, timeout=30).read())
+        response = urllib.request.urlopen(URL, timeout=30)
+        encoding = response.headers.get_content_charset()
+        jsonresults = json.loads(response.read().decode(encoding))
 
         try:
             bookdate = item['volumeInfo']['publishedDate']
