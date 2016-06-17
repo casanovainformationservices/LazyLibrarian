@@ -7,7 +7,7 @@ preferring a newer idiom, sometimes an older one, and sometimes a custom one.
 In particular, Python 2 uses str and '' for byte strings, while Python 3
 uses str and '' for unicode strings. We will call each of these the 'native
 string' type for each version. Because of this major difference, this module
-provides new 'bytestr', 'unicodestr', and 'nativestr' attributes, as well as
+provides
 two functions: 'ntob', which translates native strings (of type 'str') into
 byte strings regardless of Python version, and 'ntou', which translates native
 strings to unicode strings. This also provides a 'BytesIO' name for dealing
@@ -16,56 +16,81 @@ It also provides a 'base64_decode' function with native strings as input and
 output.
 """
 import os
+import re
 import sys
+import threading
 
-if sys.version_info >= (3, 0):
-    bytestr = bytes
-    unicodestr = str
-    nativestr = unicodestr
+import six
+
+if six.PY3:
     basestring = (bytes, str)
+
     def ntob(n, encoding='ISO-8859-1'):
-        """Return the given native string as a byte string in the given encoding."""
+        """Return the given native string as a byte string in the given
+        encoding.
+        """
+        assert_native(n)
         # In Python 3, the native string type is unicode
         return n.encode(encoding)
+
     def ntou(n, encoding='ISO-8859-1'):
-        """Return the given native string as a unicode string with the given encoding."""
+        """Return the given native string as a unicode string with the given
+        encoding.
+        """
+        assert_native(n)
         # In Python 3, the native string type is unicode
         return n
-    # type("")
-    from io import StringIO
-    # bytes:
-    from io import BytesIO as BytesIO
+
+    def tonative(n, encoding='ISO-8859-1'):
+        """Return the given string as a native string in the given encoding."""
+        # In Python 3, the native string type is unicode
+        if isinstance(n, bytes):
+            return n.decode(encoding)
+        return n
 else:
     # Python 2
-    bytestr = str
-    unicodestr = unicode
-    nativestr = bytestr
     basestring = basestring
+
     def ntob(n, encoding='ISO-8859-1'):
-        """Return the given native string as a byte string in the given encoding."""
+        """Return the given native string as a byte string in the given
+        encoding.
+        """
+        assert_native(n)
         # In Python 2, the native string type is bytes. Assume it's already
         # in the given encoding, which for ISO-8859-1 is almost always what
         # was intended.
         return n
-    def ntou(n, encoding='ISO-8859-1'):
-        """Return the given native string as a unicode string with the given encoding."""
-        # In Python 2, the native string type is bytes. Assume it's already
-        # in the given encoding, which for ISO-8859-1 is almost always what
-        # was intended.
-        return n.decode(encoding)
-    try:
-        # type("")
-        from cStringIO import StringIO
-    except ImportError:
-        # type("")
-        from StringIO import StringIO
-    # bytes:
-    BytesIO = StringIO
 
-try:
-    set = set
-except NameError:
-    from sets import Set as set
+    def ntou(n, encoding='ISO-8859-1'):
+        """Return the given native string as a unicode string with the given
+        encoding.
+        """
+        assert_native(n)
+        # In Python 2, the native string type is bytes.
+        # First, check for the special encoding 'escape'. The test suite uses
+        # this to signal that it wants to pass a string with embedded \uXXXX
+        # escapes, but without having to prefix it with u'' for Python 2,
+        # but no prefix for Python 3.
+        if encoding == 'escape':
+            return unicode(
+                re.sub(r'\\u([0-9a-zA-Z]{4})',
+                       lambda m: unichr(int(m.group(1), 16)),
+                       n.decode('ISO-8859-1')))
+        # Assume it's already in the given encoding, which for ISO-8859-1
+        # is almost always what was intended.
+        return n.decode(encoding)
+
+    def tonative(n, encoding='ISO-8859-1'):
+        """Return the given string as a native string in the given encoding."""
+        # In Python 2, the native string type is bytes.
+        if isinstance(n, unicode):
+            return n.encode(encoding)
+        return n
+
+
+def assert_native(n):
+    if not isinstance(n, str):
+        raise TypeError("n must be a native str (got %s)" % type(n).__name__)
 
 try:
     # Python 3.1+
@@ -76,29 +101,19 @@ except ImportError:
     # the legacy API of base64
     from base64 import decodestring as _base64_decodebytes
 
+
 def base64_decode(n, encoding='ISO-8859-1'):
     """Return the native string base64-decoded (as a native string)."""
-    if isinstance(n, unicodestr):
+    if isinstance(n, six.text_type):
         b = n.encode(encoding)
     else:
         b = n
     b = _base64_decodebytes(b)
-    if nativestr is unicodestr:
+    if str is six.text_type:
         return b.decode(encoding)
     else:
         return b
 
-try:
-    # Python 2.5+
-    from hashlib import md5
-except ImportError:
-    from md5 import new as md5
-
-try:
-    # Python 2.5+
-    from hashlib import sha1 as sha
-except ImportError:
-    from sha import new as sha
 
 try:
     sorted = sorted
@@ -174,16 +189,31 @@ except ImportError:
     import __builtin__ as builtins
 
 try:
-    # Python 2. We have to do it in this order so Python 2 builds
+    # Python 2. We try Python 2 first clients on Python 2
     # don't try to import the 'http' module from cherrypy.lib
     from Cookie import SimpleCookie, CookieError
-    from httplib import BadStatusLine, HTTPConnection, HTTPSConnection, IncompleteRead, NotConnected
+    from httplib import BadStatusLine, HTTPConnection, IncompleteRead
+    from httplib import NotConnected
     from BaseHTTPServer import BaseHTTPRequestHandler
 except ImportError:
     # Python 3
     from http.cookies import SimpleCookie, CookieError
-    from http.client import BadStatusLine, HTTPConnection, HTTPSConnection, IncompleteRead, NotConnected
+    from http.client import BadStatusLine, HTTPConnection, IncompleteRead
+    from http.client import NotConnected
     from http.server import BaseHTTPRequestHandler
+
+# Some platforms don't expose HTTPSConnection, so handle it separately
+if six.PY3:
+    try:
+        from http.client import HTTPSConnection
+    except ImportError:
+        # Some platforms which don't have SSL don't expose HTTPSConnection
+        HTTPSConnection = None
+else:
+    try:
+        from httplib import HTTPSConnection
+    except ImportError:
+        HTTPSConnection = None
 
 try:
     # Python 2
@@ -197,16 +227,19 @@ if hasattr(threading.Thread, "daemon"):
     # Python 2.6+
     def get_daemon(t):
         return t.daemon
+
     def set_daemon(t, val):
         t.daemon = val
 else:
     def get_daemon(t):
         return t.isDaemon()
+
     def set_daemon(t, val):
         t.setDaemon(val)
 
 try:
     from email.utils import formatdate
+
     def HTTPDate(timeval=None):
         return formatdate(timeval, usegmt=True)
 except ImportError:
@@ -215,40 +248,49 @@ except ImportError:
 try:
     # Python 3
     from urllib.parse import unquote as parse_unquote
+
     def unquote_qs(atom, encoding, errors='strict'):
-        return parse_unquote(atom.replace('+', ' '), encoding=encoding, errors=errors)
+        return parse_unquote(
+            atom.replace('+', ' '),
+            encoding=encoding,
+            errors=errors)
 except ImportError:
     # Python 2
     from urllib import unquote as parse_unquote
+
     def unquote_qs(atom, encoding, errors='strict'):
         return parse_unquote(atom.replace('+', ' ')).decode(encoding, errors)
 
 try:
-    # Prefer simplejson, which is usually more advanced than the builtin module.
+    # Prefer simplejson, which is usually more advanced than the builtin
+    # module.
     import simplejson as json
     json_decode = json.JSONDecoder().decode
-    json_encode = json.JSONEncoder().iterencode
+    _json_encode = json.JSONEncoder().iterencode
 except ImportError:
-    if sys.version_info >= (3, 0):
-        # Python 3.0: json is part of the standard library,
-        # but outputs unicode. We need bytes.
+    if sys.version_info >= (2, 6):
+        # Python >=2.6 : json is part of the standard library
         import json
         json_decode = json.JSONDecoder().decode
         _json_encode = json.JSONEncoder().iterencode
+    else:
+        json = None
+
+        def json_decode(s):
+            raise ValueError('No JSON library is available')
+
+        def _json_encode(s):
+            raise ValueError('No JSON library is available')
+finally:
+    if json and six.PY3:
+        # The two Python 3 implementations (simplejson/json)
+        # outputs str. We need bytes.
         def json_encode(value):
             for chunk in _json_encode(value):
                 yield chunk.encode('utf8')
-    elif sys.version_info >= (2, 6):
-        # Python 2.6: json is part of the standard library
-        import json
-        json_decode = json.JSONDecoder().decode
-        json_encode = json.JSONEncoder().iterencode
     else:
-        json = None
-        def json_decode(s):
-            raise ValueError('No JSON library is available')
-        def json_encode(s):
-            raise ValueError('No JSON library is available')
+        json_encode = _json_encode
+
 
 try:
     import cPickle as pickle
@@ -257,16 +299,10 @@ except ImportError:
     # In Python 3, pickle is the sped-up C version.
     import pickle
 
-try:
-    os.urandom(20)
-    import binascii
-    def random20():
-        return binascii.hexlify(os.urandom(20)).decode('ascii')
-except (AttributeError, NotImplementedError):
-    import random
-    # os.urandom not available until Python 2.4. Fall back to random.random.
-    def random20():
-        return sha('%s' % random.random()).hexdigest()
+import binascii
+
+def random20():
+    return binascii.hexlify(os.urandom(20)).decode('ascii')
 
 try:
     from _thread import get_ident as get_thread_ident
@@ -281,3 +317,25 @@ except NameError:
     def next(i):
         return i.next()
 
+if sys.version_info >= (3, 3):
+    Timer = threading.Timer
+    Event = threading.Event
+else:
+    # Python 3.2 and earlier
+    Timer = threading._Timer
+    Event = threading._Event
+
+# Prior to Python 2.6, the Thread class did not have a .daemon property.
+# This mix-in adds that property.
+
+
+class SetDaemonProperty:
+
+    def __get_daemon(self):
+        return self.isDaemon()
+
+    def __set_daemon(self, daemon):
+        self.setDaemon(daemon)
+
+    if sys.version_info < (2, 6):
+        daemon = property(__get_daemon, __set_daemon)

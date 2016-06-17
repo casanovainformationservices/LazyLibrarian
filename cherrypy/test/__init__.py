@@ -8,15 +8,20 @@ flag, don't be surprised if the test seems to hang: it's waiting for your
 interactive input.
 """
 
+import os
 import sys
+
+
 def newexit():
-    raise SystemExit('Exit called')
+    os._exit(1)
+
 
 def setup():
     # We want to monkey patch sys.exit so that we can get some
     # information about where exit is being called.
     newexit._old = sys.exit
     sys.exit = newexit
+
 
 def teardown():
     try:
