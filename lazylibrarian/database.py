@@ -1,5 +1,3 @@
-
-
 import os
 import sqlite3
 import threading
@@ -10,7 +8,7 @@ import lazylibrarian
 from lazylibrarian import logger
 
 db_lock = threading.Lock()
-
+#Default to data directory for path
 def dbFilename(filename="lazylibrarian.db"):
 
     return os.path.join(lazylibrarian.DATADIR, filename)
@@ -23,6 +21,7 @@ class DBConnection:
         self.connection.row_factory = sqlite3.Row
 
     def action(self, query, args=None):
+	#Lock database before change
         with db_lock:
 
             if query == None:
@@ -30,7 +29,7 @@ class DBConnection:
 
             sqlResult = None
             attempt = 0
-
+		#Limit actions to 5 attempts
             while attempt < 5:
 
                 try:
@@ -65,7 +64,7 @@ class DBConnection:
             return []
 
         return sqlResults
-
+	#To DO: Limit lines to 80 char. 
     def upsert(self, tableName, valueDict, keyDict):
         changesBefore = self.connection.total_changes
 

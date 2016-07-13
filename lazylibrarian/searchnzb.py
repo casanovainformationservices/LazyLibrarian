@@ -1,4 +1,10 @@
-import time, threading, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, os, re
+import time
+import threading
+import urllib.request
+import urllib.parse
+import urllib.error
+import os
+import re
 
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
@@ -13,9 +19,10 @@ def searchbook(books=None):
     threading.currentThread().name = "SEARCHBOOKS"
     myDB = database.DBConnection()
     searchlist = []
-
+	#If user did not pass a book, then return all wanted books
     if books is None:
         searchbooks = myDB.select('SELECT BookID, AuthorName, Bookname from books WHERE Status="Wanted"')
+	#Otherwise return all books with matching ID
     else:
         searchbooks = []
         for book in books:
@@ -27,12 +34,12 @@ def searchbook(books=None):
         bookid = searchbook[0]
         author = searchbook[1]
         book = searchbook[2]
-
+	#Strip illegal chars
         dic = {'...':'', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':''}
-
+	#Convert Author and Book to ASCII
         author = formatter.latinToAscii(formatter.replace_all(author, dic))
         book = formatter.latinToAscii(formatter.replace_all(book, dic))
-
+	#Build Searchlist
         searchterm = author + ' ' + book
         searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
         searchlist.append({"bookid": bookid, "searchterm": searchterm})
@@ -42,7 +49,7 @@ def searchbook(books=None):
 
     if not lazylibrarian.NEWZNAB:
         logger.info('No providers are set.')
-
+	#Conatct all usenet providers and search
     for book in searchlist:
         resultlist = []
         if lazylibrarian.NEWZNAB and not resultlist:
@@ -77,7 +84,7 @@ def searchbook(books=None):
                 if not snatchedbooks:
                     snatch = DownloadMethod(bookid, nzbprov, nzbtitle, nzburl)
                 time.sleep(1)
-
+#Defines wich NZBD service to conatct
 def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
 
     myDB = database.DBConnection()
@@ -92,10 +99,10 @@ def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
 
         except urllib.error.URLError as e:
             logger.warn('Error fetching nzb from url: ' + nzburl + ' %s' % e)
-
+	#Replace spaces with underscores
         nzbname = str.replace(nzbtitle, ' ', '_') + '.nzb'
         nzbpath = os.path.join(lazylibrarian.BLACKHOLEDIR, nzbname)
-
+	#Write NZBD file to disk
         try:
             f = open(nzbpath, 'w')
             f.write(nzbfile)
@@ -109,7 +116,7 @@ def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
     else:
         logger.error('No downloadmethod is enabled, check config.')
         return False
-
+	#If Download succeded, then update database to snatched
     if download:
         logger.info('Downloaded nzbfile @ <a href="%s">%s</a>' % (nzburl, lazylibrarian.NEWZNAB_HOST))
         myDB.action('UPDATE books SET status = "Snatched" WHERE BookID=?', [bookid])

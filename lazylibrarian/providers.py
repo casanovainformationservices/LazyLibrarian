@@ -1,4 +1,9 @@
-import time, threading, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, re
+import time
+import threading
+import urllib.request
+import urllib.parse
+import urllib.error
+import re
 
 from xml.etree import ElementTree
 

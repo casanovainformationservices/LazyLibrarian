@@ -1,4 +1,8 @@
-import os, cherrypy, urllib.request, urllib.parse, urllib.error
+import os
+import cherrypy
+import urllib.request
+import urllib.parse
+import urllib.error
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -14,7 +18,7 @@ from lazylibrarian.formatter import checked
 from lazylibrarian.gr import GoodReads
 from lazylibrarian.gb import GoogleBooks
 
-
+#Serve Template for page of Data Directory
 def serve_template(templatename, **kwargs):
 
     interface_dir = os.path.join(str(lazylibrarian.PROG_DIR), 'data/interfaces/')
@@ -28,7 +32,7 @@ def serve_template(templatename, **kwargs):
     except:
         return exceptions.html_error_template().render()
 
-
+#Update to Python3 Standards
 class WebInterface(object):
 
     def index(self):
@@ -55,7 +59,7 @@ class WebInterface(object):
             raise cherrypy.HTTPRedirect("books")
         return serve_template(templatename="books.html", title='Books', books=books, languages=languages)
     books.exposed = True
-
+	#Maybe do YAML config for this
     def config(self):
         http_look_dir = os.path.join(lazylibrarian.PROG_DIR, 'data/interfaces/')
         http_look_list = [ name for name in os.listdir(http_look_dir) if os.path.isdir(os.path.join(http_look_dir, name)) ]
@@ -95,7 +99,7 @@ class WebInterface(object):
                 }
         return serve_template(templatename="config.html", title="Settings", config=config)    
     config.exposed = True
-
+#Make PEP8 Compliant and Reimplement
     def configUpdate(self, http_host='0.0.0.0', http_user=None, http_port=5299, http_pass=None, http_look=None, launch_browser=0, logdir=None, imp_onlyisbn=0, imp_preflang=None,
         sab_host=None, sab_port=None, sab_api=None, sab_user=None, sab_pass=None, destination_copy=0, destination_dir=None, download_dir=None, sab_cat=None, usenet_retention=None, blackhole=0, blackholedir=None,
         nzbmatrix=0, nzbmatrix_user=None, nzbmatrix_api=None, newznab=0, newznab_host=None, newznab_api=None, newzbin=0, newzbin_uid=None, newzbin_pass=None):
@@ -145,6 +149,7 @@ class WebInterface(object):
 
 #SEARCH
     def search(self, name, type):
+	#Add GoodReads Compatibility
         GB = GoogleBooks(name, type)
         if len(name) == 0:
             raise cherrypy.HTTPRedirect("config")

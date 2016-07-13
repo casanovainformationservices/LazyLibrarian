@@ -1,4 +1,7 @@
-import os, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
+import os
+import urllib.request
+import urllib.parse
+import urllib.error
 import datetime
 
 import lazylibrarian
@@ -6,16 +9,16 @@ import lazylibrarian
 from lazylibrarian import logger, database
 
 def SABnzbd(title=None, nzburl=None):
-
+#Changes https to http
     HOST = lazylibrarian.SAB_HOST + ":" + lazylibrarian.SAB_PORT
     if not str(HOST)[:4] == "http":
         HOST = 'http://' + HOST
 
     params = {}
-
+	#Login for user
     params['mode'] = 'addurl'
     params['name'] = nzburl
-
+	#Checks that all are defined and nothing is missing
     if lazylibrarian.SAB_USER:
         params['ma_username'] = lazylibrarian.SAB_USER
     if lazylibrarian.SAB_PASS:
@@ -33,7 +36,7 @@ def SABnzbd(title=None, nzburl=None):
 #        params["priority"] = lazylibrarian.SAB_PRIO
 #    if lazylibrarian.SAB_PP:
 #        params["script"] = lazylibrarian.SAB_SCRIPT
-
+#    Encodes parameters
     URL = HOST + "/api?" + urllib.parse.urlencode(params) 
 
     # to debug because of api

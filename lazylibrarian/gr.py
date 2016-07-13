@@ -1,4 +1,9 @@
-import time, threading, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, sys
+import time
+import threading
+import urllib.request
+import urllib.parse
+import urllib.errorur
+import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -14,10 +19,10 @@ class GoodReads:
         self.params = {"key":  lazylibrarian.GR_API}
 
     def find_author_id(self):
-
+	#URL Encode Request
         URL = 'http://www.goodreads.com/api/author_url/?' + urllib.parse.urlencode(self.name) + '&' + urllib.parse.urlencode(self.params)
         logger.info("Searching for author with name: %s" % self.name)
-
+	#Parse XML Response
         try:
             sourcexml = ElementTree.parse(urllib.request.urlopen(URL, timeout=20))
         except (urllib.error.URLError, IOError, EOFError) as e:
@@ -26,11 +31,12 @@ class GoodReads:
         rootxml = sourcexml.getroot()
         resultxml = rootxml.getiterator('author')
         authorlist = []
-
+	#Parse XML Tree for Authors
         if not len(rootxml):
             logger.info('No authors found with name: %s' % self.name)
             return authorlist
         else:
+	#Display authors to user
             for author in resultxml:
                 authorid = author.attrib.get("id")
                 logger.info('Found author: %s with GoodReads-id: %s' % (author[0].text, authorid))
@@ -40,9 +46,10 @@ class GoodReads:
         return authorlist
 
     def get_author_info(self, authorid=None):
-
+	#URL Encode Request
         URL = 'http://www.goodreads.com/author/show/' + authorid + '.xml?' + urllib.parse.urlencode(self.params)
         sourcexml = ElementTree.parse(urllib.request.urlopen(URL, timeout=20))
+	#Find Author Nodes
         rootxml = sourcexml.getroot()
         resultxml = rootxml.find('author')
         author_dict = {}
@@ -52,7 +59,7 @@ class GoodReads:
 
         else:
             logger.info("Processing info for authorID: %s" % authorid)
-
+		#Parse and Store Attributes
             author_dict = {
                 'authorid':   resultxml[0].text,
                 'authorlink':   resultxml.find('link').text,

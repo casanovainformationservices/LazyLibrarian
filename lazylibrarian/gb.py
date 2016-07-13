@@ -1,7 +1,11 @@
 # example
 # https://www.googleapis.com/books/v1/volumes?q=+inauthor:george+martin+intitle:song+ice+fire
 
-import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, json, time
+import urllib.request
+import urllib.parse
+import urllib.error
+import json
+import time
 
 import lazylibrarian
 from lazylibrarian import logger, formatter, database
@@ -32,16 +36,18 @@ class GoogleBooks:
             startindex = 0
             resultcount = 0
             ignored = 0
+		
+		#Find loop
             while True:
-
+		#URL encode request
                 self.params['startIndex'] = startindex
                 URL = set_url + '&' + urllib.parse.urlencode(self.params)
-
+		#Decode response From Server
                 response = urllib.request.urlopen(URL, timeout=30)
                 encoding = response.headers.get_content_charset()
                 jsonresults = json.loads(response.read().decode(encoding))
                 startindex = startindex+40
-
+		#Parse Book Attributes
                 for item in jsonresults['items']:
 
                     # skip if no author, no author is no book.
@@ -139,13 +145,14 @@ class GoogleBooks:
 
     def find_book(self, bookid=None):
         resultlist = []
-
+	#URL Encode Request
         URL = 'https://www.googleapis.com/books/v1/volumes/' + bookid
         #jsonresults = json.JSONDecoder().decode(urllib.request.urlopen(URL, timeout=30).read())
+	#Decode Response From Server
         response = urllib.request.urlopen(URL, timeout=30)
         encoding = response.headers.get_content_charset()
         jsonresults = json.loads(response.read().decode(encoding))
-
+	#Parse book information
         try:
             bookdate = item['volumeInfo']['publishedDate']
         except KeyError:

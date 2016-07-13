@@ -1,4 +1,10 @@
-import shutil, os, datetime, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, threading
+import shutil
+import os
+import datetime
+import urllib.request
+import urllib.parse
+import urllib.error
+import threading
 
 from urllib.request import FancyURLopener
 
@@ -9,7 +15,7 @@ from lazylibrarian import database, logger, formatter
 def processDir():
     # rename this thread
     threading.currentThread().name = "POSTPROCESS"
-
+`#See what has been snapped so far
     processpath = lazylibrarian.DOWNLOAD_DIR
     downloads = os.listdir(processpath)
     myDB = database.DBConnection()
@@ -22,6 +28,7 @@ def processDir():
     else:
         ppcount=0
         for book in snatched:
+	#Grabs metadata from book
             if book['NZBtitle'] in downloads:
                 pp_path = os.path.join(processpath, book['NZBtitle'])
                 logger.info('Found folder %s.' % pp_path)
@@ -42,12 +49,13 @@ def processDir():
                     bookpub = metadata['BookPub']
 
                 dest_path = authorname+'/'+bookname
+		#Remove illegal chars
                 dic = {'<':'', '>':'', '=':'', '?':'', '"':'', ',':'', '*':'', ':':'', ';':''}
                 dest_path = formatter.latinToAscii(formatter.replace_all(dest_path, dic))
                 dest_path = os.path.join(lazylibrarian.DESTINATION_DIR, dest_path).encode(lazylibrarian.SYS_ENCODING)
-
+		#Move book to destination when completed
                 processBook = processDestination(pp_path, dest_path, authorname, bookname)
-
+		#If processBook succeeds, then update application
                 if processBook:
 
                     ppcount = ppcount+1
@@ -115,7 +123,7 @@ def processIMG(dest_path=None, bookimg=None):
 
     except (IOError, EOFError) as e:
         logger.error('Error fetching cover from url: %s, %s' % (bookimg, e))
-
+#Change to template
 def processOPF(dest_path=None, authorname=None, bookname=None, bookisbn=None, bookid=None, bookpub=None, bookdate=None, bookdesc=None, booklang=None):
     opfinfo = '<?xml version="1.0"  encoding="UTF-8"?>\n\
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" >\n\

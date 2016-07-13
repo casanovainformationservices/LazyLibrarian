@@ -32,7 +32,7 @@ def is_valid_isbn(isbn):
     weighted = [int(num)*weight for num, weight in
               zip(isbn[:-1], reversed(list(range(2, 11))))]
     return (sum(weighted) + last) %11==0
-
+#TODO: Reimplement latinToAscii and clean it up
 def latinToAscii(unicrap):
     """
     From couch potato
